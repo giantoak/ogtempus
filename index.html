@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>GO Tempus</title>
+
+    <!-- Bootstrap core CSS -->
+    
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,300,700' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=PT+Serif:400,700,400italic' rel='stylesheet' type='text/css'>
+    <link href='https://netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.css' rel='stylesheet' type='text/css'>
+    <link href='https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css' rel='stylesheet' type='text/css'>
+    <link href="../../dist/css/jasny-bootstrap.min.css" rel="stylesheet">
+     <link href="navmenu-reveal.css" rel="stylesheet">
+    <link href='../../../../metrics-graphics-2.1.0/dist/metricsgraphics.css' rel='stylesheet' type='text/css'>
+    <link href='../../../../metrics-graphics-2.1.0/css/metricsgraphics-demo.css' rel='stylesheet' type='text/css' id='light'>
+    <link href='' rel='stylesheet' type='text/css' id='dark'>
+
+    <script src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js'></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.0/d3.min.js' charset='utf-8'></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    <script src="../../dist/js/jasny-bootstrap.min.js"></script>
+    <script src='../../../../metrics-graphics-2.1.0/dist/metricsgraphics.js'></script>
+
+    <!-- Custom styles for this template -->
+   
+
+
+       
+
+     <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({tex2jax: {inlineMath: [['$','$'], ['\\(','\\)']]}});
+    </script>
+    <script type="text/javascript"
+      src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>   
+    <style>
+
+    a.btn,a.btn:hover,a.btn:visited,a.btn:active{
+         text-decoration: none;
+         color: #FFFFFF;
+        } 
+    </style>    
+  </head>
+  <body>
+ 
+      <div class="navmenu navmenu-default navmenu-fixed-left">
+      <a class="navmenu-brand" href="#"><font face="zapfino">Tempus</font></a>
+      <ul class="nav navmenu-nav">
+    <div class="btn-group">
+    <a class="btn btn-primary dropdown-toggle" data-toggle="dropdown" href="#">Select a method<span class="caret"></span></a>
+    <ul class="dropdown-menu">
+      <li><a href="#">Changepoint Detection</a></li>
+      <li><a href="#">Breakpoint Detection</a></li>
+      <li class="divider"></li>
+      <li><a href="#">ARIMA</a></li>
+      <li><a href="#">MMPP</a></li>
+      <li><a href="#">Anomaly Detection</a></li>
+      <li class="divider"></li>
+      <li><a href="#">Seasonal Trend Decomposition</a></li>
+      <li><a href="#">Moving Average</a></li>
+      <li class="divider"></li>
+      <li><a href='#'>Causal Impact</a></li>
+    </ul>
+  </div>
+
+
+
+
+  <!-- /.modal-dialog -->
+  <br>
+  <br>
+
+ <div id="drop_zone">Drop file here</div>
+
+    </div>
+
+    <div class="canvas">
+      <div class="navbar navbar-default navbar-fixed-top">
+        <button type="button" class="navbar-toggle" data-toggle="offcanvas" data-recalc="false" data-target=".navmenu" data-canvas=".canvas">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+      </div>
+
+      <div class="container" id='output'>
+
+      </div><!-- /.container -->
+    </div>
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+ 
+    <script src="drop.js"></script>
+<script>    // Check for the various File API support.
+
+
+$(document).ready(function() {
+
+});
+
+var dat=[]
+
+
+$.get('https://www.quandl.com/api/v1/datasets/BAVERAGE/USD.json?trim_start=2012-12-30&trim_end=2014-11-11&auth_token=wtEcBRATQ9CToGYSrjs4', function(data) {
+new_data=data['data'].map(function(x){return {"date":new Date(x[0]),value:x[1]}});
+dat=new_data
+$('#output').append('<div id="new">') 
+var chart_count=1
+MG.data_graphic({
+    title: "Raw data",
+    data: new_data,
+    width:screen.width-100,
+    height:250,
+    area:true,
+    linked:true,
+    xax_count:14,
+    target: '#new',
+    area:false,
+    x_accessor: 'date',
+    y_accessor: 'value'
+})
+       
+
+$(function(){
+$(".dropdown-menu li a").click(function(){
+              var selText = $(this).text();
+        var query_url;
+  $(this).parents('.btn-group').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
+  if(selText=='ARIMA'){
+   $.ajax({
+    type:"POST",
+    url:"../../../../opencpu_time_series/opencpu_example/arima",
+    contentType:'application/json',
+    dataType:'json',
+    data: JSON.stringify({date:new_data.map(function(x){return x['date']}),value:new_data.map(function(x){return x['value']})}),
+    success: function(data){
+      console.log("Success!")
+      var data2=[];
+       for(var i=0; i<data['dates'].length;i++){
+        data2.push({'lb':data['lb'][i],'ub':data['ub'][i],'date':new Date(data['dates'][i]),'value':data['resid'][i]})
+      }
+      console.log(data2)
+      
+      var pv=data['p.value']
+      if(pv<0.01){
+      var pvalue="very strong presumption against null hypothesis"
+      var indicator=' fa-exclamation-triangle" style="color:red"'
+
+      }
+      else if (0.01 < pv & pv <= 0.05) {
+      var pvalue="strong presumption against null hypothesis"
+      var indicator=' fa-exclamation-triangle" style="color:orange"'
+      }
+
+      else if (0.05 < pv & pv <= 0.1) {
+      var pvalue="low presumption against null hypothesis"
+      var indicator=' fa-check-circle" style="color:yellow"'  
+      }
+
+      else{
+      var pvalue="no presumption against the null hypothesis" 
+      var indicator=' fa-check-circle" style="color:green"'
+      }
+
+      $('#output').append('<div id="trunk">')
+      $('#trunk').append('<div id="res1" class="col-lg-8">') 
+      $('#trunk').append('<div id="res2" class="col-lg-4">')
+      $('#output').append('<br>')
+      MG.data_graphic({
+                title: "Residuals",
+                description: "This displays the residuals from an ARIMA model",
+                data: data2,
+                width: 750,
+                height: 250,
+                target: '#res1',
+                x_accessor: 'date',
+                linked:true,
+                show_confidence_band: ['lb', 'ub'],
+                xax_count:12,
+                area:false,
+                y_accessor: 'value',
+                })
+      ma="";
+      ar=""
+      for(var i=0; i<data['theta'].length;i++){
+        if(data['theta'][i]>=0){
+          st='}+'
+        }
+        else {
+          st='}-'
+        }
+
+        ma+=data['theta'][i]+' \\epsilon_{t-'+(i+1)+st
+      }
+      st=""
+       for(var i=0; i<data['phi'].length;i++){
+          if(data['phi'][i]>=0){
+          st='+'
+        }
+        else {
+          st='-'
+        }
+        ar+=st+Math.abs(data['phi'][i])+'y_{t-'+(i+1)+'}'
+      }
+      ma = ma.substring(0, ma.length - 1);
+      //ar = ar.substring(0, ar.length - 1);
+      console.log(data['theta'])
+      console.log(ar)
+      $('#res2').append('<h2 >Estimated model <i id="indicator"  data-toggle="popover"  title="Legend" class="fa' + indicator +'></i></h2><br><p>The model was estimated as ARIMA('+data['phi'].length+','+data['D']+','+data['phi'].length+') with the following parameters: <p style="text-align:center">$$(1-L)^'+data['D']+'y_t = '+ar+'+\\epsilon_t'+ma+'$$</p><br><p>The p-value associated with the Box-Pierce test was: '+data['p.value']+' which indicates '+pvalue+' of white noise residuals.</p>');
+      MathJax.Hub.Queue(["Typeset",MathJax.Hub,'res2']);
+         $('#indicator').attr('data-content','<i class="fa fa-exclamation-triangle" style="color:red"></i> - Warning<br><i class="fa fa-exclamation-triangle" style="color:orange"></i> - Caution<br><i class="fa fa-check-circle" style="color:GreenYellow;"></i> - Fair<br><i class="fa fa-check-circle" style="color:green"></i> - Good<br>');
+
+         $('[data-toggle="popover"]').popover({
+              html : true, 
+            content: function() {
+            return $('#indicator').html();
+            },
+              trigger: 'hover',
+                  'placement': 'top'
+
+          });
+      }
+    
+    
+  });
+ 
+ }
+  else if (selText=='Seasonal Trend Decomposition'){
+
+    $('a.external').prop('href',"http://en.wikipedia.org/wiki/Decomposition_of_time_series");
+  query_url="stl_test"
+console.log(new_data)
+$.ajax({
+    type:"POST",
+    url:"../../../../opencpu_time_series/opencpu_example/get",
+    contentType:'application/json',
+    dataType:'json',
+    data: JSON.stringify({date:new_data.map(function(x){return x['date']}),value:new_data.map(function(x){return x['value']})}),
+    success: function(data){
+      console.log("Success!")
+      console.log(data)
+      es=data
+                   for(var key in Object.keys(es)){
+                    $('#output').append('<div id="'+ Object.keys(es)[key]+'">') 
+                chart_count+=1
+                console.log('#'+Object.keys(es)[key])
+                MG.data_graphic({
+                title: Object.keys(es)[key] + ' component',
+                data: es[Object.keys(es)[key]].map(function(x){return {"date":new Date(x['date']),value:x['value']}}),
+                width: screen.width-150,
+                height: 250,
+                target: '#'+Object.keys(es)[key],
+                x_accessor: 'date',
+                linked:true,
+                xax_count:14,
+                area:false,
+                y_accessor: 'value',
+                })
+
+                
+                }
+
+    
+  }
+  });
+}
+else if (selText=='Breakpoint Detection'){
+$.ajax({
+    type:"POST",
+    url:"../../../../opencpu_time_series/opencpu_example/bo",
+    contentType:'application/json',
+    dataType:'json',
+    data: JSON.stringify({date:new_data.map(function(x){return x['date']}),value:new_data.map(function(x){return x['value']})}),
+    success: function(data){
+      console.log("Success!")
+      console.log(data)
+      var markers=[{
+        'date':new Date(new_data.map(function(x){return x['date']})[data['loc']]),
+        'label': "Breakpoint"
+      }];
+     MG.data_graphic({
+                title: "Raw data",
+                data: new_data.map(function(x){return {"date":new Date(x['date']),value:x['value']}}),
+                width: screen.width-150,
+                height: 250,
+                target: '#new',
+                markers: markers,
+                x_accessor: 'date',
+                linked:true,
+                xax_count:12,
+                area:false,
+                y_accessor: 'value',
+                })
+
+  }
+  });
+  }
+  else if (selText=='Causal Impact'){
+$.ajax({
+    type:"POST",
+    url:"../../../../opencpu_time_series/opencpu_example/ci",
+    contentType:'application/json',
+    dataType:'json',
+    data: JSON.stringify({date:dat.map(function(x){return x['date']}),value:dat.map(function(x){return x['value']}),bp:70}),
+    success: function(data){
+      console.log("Success!")
+      console.log(data)
+      var data2=[];
+      for(var i=0; i<data['series'].length;i++){
+        data2.push({'response':data['series'][i][0], 'point.pred':data['series'][i][2],'point.pred.lower':data['series'][i][3],'point.pred.upper':data['series'][i][4],'date':data['date'][i],
+          'point.effect':data['series'][i][8],'point.effect.lower':data['series'][i][9],'point.effect.upper':data['series'][i][10],
+          'cum.effect':data['series'][i][11],'cum.effect.lower':data['series'][i][12],'cum.effect.upper':data['series'][i][13] })
+      }
+       $('#output').append('<div id="ci-1">')
+       $('#output').append('<div id="ci-2">')
+      $('#output').append('<div id="ci-3">')
+     console.log(data2)
+      var markers=[{
+        'date':new Date(data['date'].map(function(x){return x['date']})[70]),
+        'label': "Intervention"
+      }];
+      console.log(markers)
+      MG.data_graphic({
+                title: "Original",
+                data: data2.map(function(x){return {"date":new Date(x['date']),"value":x['response'],"l":x['point.pred.lower'],"u":x['point.pred.upper']}}),
+                width: screen.width-150,
+                height: 250,
+                target: '#ci-1',
+                x_accessor: 'date',
+                linked:true,
+                markers:markers,
+                show_confidence_band: ['l', 'u'],
+                xax_count:12,
+                area:false,
+                y_accessor: 'value',
+                })
+          MG.data_graphic({
+                title: "Point Effect",
+             data: data2.map(function(x){return {"date":new Date(x['date']),"value":x['point.effect'],"l":x['point.effect.lower'],"u":x['point.effect.upper']}}),
+                width: screen.width-150,
+                height: 250,
+                target: '#ci-2',
+                x_accessor: 'date',
+                linked:true,
+                show_confidence_band: ['l', 'u'],
+                xax_count:12,
+                area:false,
+                y_accessor: 'value',
+                })
+        MG.data_graphic({
+                title: "Cumulative Effect",
+             data: data2.map(function(x){return {"date":new Date(x['date']),"value":x['cum.effect'],"l":x['cum.effect.lower'],"u":x['cum.effect.upper']}}),
+                width: screen.width-150,
+                height: 250,
+                target: '#ci-3',
+                x_accessor: 'date',
+                linked:true,
+                show_confidence_band: ['l', 'u'],
+                xax_count:12,
+                area:false,
+                y_accessor: 'value',
+                })
+
+
+
+  }
+  });
+
+
+
+
+  }
+
+    else if (selText=='MMPP'){
+
+    }
+
+     else if (selText=='Anomaly Detection'){
+
+    $.ajax({
+        type:"POST",
+        url:"../../../../opencpu_time_series/opencpu_example/anomaly",
+        contentType:'application/json',
+        dataType:'json',
+        data: JSON.stringify({date:dat.map(function(x){return x['date']}),value:dat.map(function(x){return x['value']})}),
+        success: function(data){
+          console.log("Success!")
+          console.log(data)
+         }
+       });
+}   
+  else{
+    $('a.external').prop('href',"http://en.wikipedia.org/wiki/Change_detection");
+$.ajax({
+    type:"POST",
+    url:"../../../../opencpu_time_series/opencpu_example/bcp",
+    contentType:'application/json',
+    dataType:'json',
+    data: JSON.stringify({date:new_data.map(function(x){return x['date']}),value:new_data.map(function(x){return x['value']})}),
+    success: function(data){
+      console.log("Success!")
+      console.log(data)
+      $('#output').append('<div id="bcp">') 
+      MG.data_graphic({
+                title: "Changepoint probability",
+                description: "This displays the posterior probability of a change point at each point in time",
+                data: data.map(function(x){return {"date":new Date(x['date']),value:x['value']}}),
+                width: screen.width-150,
+                height: 250,
+                target: '#bcp',
+                chart_type:'histogram',
+                x_accessor: 'date',
+                linked:true,
+                xax_count:12,
+                area:false,
+                binned:true,
+                y_accessor: 'value',
+                min_y: 0
+                })
+
+  }
+  });
+  }
+ 
+
+});
+});
+
+console.log(dat)
+});
+
+
+</script>
+  
+</body>
+</html>
