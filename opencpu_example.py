@@ -1,19 +1,18 @@
 import tangelo
 import requests
-import json
-import cherrypy
-import numpy as np
-import urllib
-import simplejson
+# import cherrypy
+# import numpy as np
+# import urllib
+import simplejson as json
 import collections
 
-def getTS(date,value):
-	ts=value
-	dates=date
-	data2='ts(c('+str(ts)[1:-2]+'),frequency=12)' #need to post data as a time series object to stl
-	url='https://public.opencpu.org/ocpu/library/stats/R/stl'
-	params={'x':data2,'s.window':4}
-	r=requests.post(url,params)
+def getTS(date, value):
+    ts = value
+    dates = date
+	data2 = 'ts(c('+str(ts)[1:-2]+'),frequency=12)' #need to post data as a time series object to stl
+	url = 'https://public.opencpu.org/ocpu/library/stats/R/stl'
+	params = {'x':data2,'s.window':4}
+	r = requests.post(url,params)
 #stl returns an object of class stl with components 
 #time.series a multiple time series with columns seasonal, trend and remainder.
 #weights	the final robust weights (all one if fitting is not done robustly).
@@ -34,14 +33,15 @@ def getTS(date,value):
 	stl={'seasonal':seasonal_ts,'trend':trend_ts,'remainder':remainder_ts}
 	return json.dumps(stl)
 
-def breakout(date,value):
+
+def breakout(date, value):
 	url='https://public.opencpu.org/ocpu/github/twitter/BreakoutDetection/R/breakout/json'
 	data2='c('+str(value)[1:-2]+')'
 	params={'Z':data2}
 	r=requests.post(url,params)
 	return r.json()
 
-def bcp(date,value):
+def bcp(date, value):
 	url='https://public.opencpu.org/ocpu/library/bcp/R/bcp/'
 	data2='c('+str(value)[1:-2]+')'
 	params={'x':data2}
@@ -52,22 +52,22 @@ def bcp(date,value):
 	r2=requests.post(url2,params2)
 	return json.dumps(map(lambda x: {"date":x[0],"value":x[1]},zip(date,r2.json())))
 	
-def arima(date,value):
-	ts=value
-	dates=date
-	data2='ts(c('+str(ts)[1:-2]+'))'
-	url='https://public.opencpu.org/ocpu/github/giantoak/goarima/R/arima_all/json'
-	params={'x':data2}
-	r=requests.post(url,params)
-	#res=r.text.split('\n')[0]
-	#url3='http://public.opencpu.org/ocpu/library/stats/R/residuals/json'
-	#x={'object':res[10:21]}
-	#r2=requests.post(url3,x)
-	#residuals=np.array(map(lambda x: x,r2.json()))
-	#std_res=map(lambda x: x ,residuals/np.std(residuals))
-	#return json.dumps(map(lambda x:{'date':x[0],'value':x[1]},zip(date,std_res)))
-	data=r.json()
-	data['dates']=date
+def arima(date, value):
+	ts = value
+	dates = date
+	data2 = 'ts(c('+str(ts)[1:-2]+'))'
+	url = 'https://public.opencpu.org/ocpu/github/giantoak/goarima/R/arima_all/json'
+	params = {'x': data2}
+	r = requests.post(url, params)
+	# res = r.text.split('\n')[0]
+	# url3 = 'http://public.opencpu.org/ocpu/library/stats/R/residuals/json'
+	# x = {'object':res[10:21]}
+	# r2 = requests.post(url3,x)
+	# residuals = np.array(map(lambda x: x,r2.json()))
+	# std_res = map(lambda x: x ,residuals/np.std(residuals))
+	# return json.dumps(map(lambda x:{'date':x[0],'value':x[1]},zip(date,std_res)))
+	data = r.json()
+	data['dates'] = date
 	return json.dumps(data)
 
 def ci(date,value,bp):
