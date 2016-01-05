@@ -131,7 +131,7 @@ $(".dropdown-menu li a").click(function(){
   if(selText=='ARIMA'){
    $.ajax({
     type:"POST",
-    url:"../../../../opencpu_time_series/opencpu_example/arima",
+    url:"opencpu_example/arima",
     contentType:'application/json',
     dataType:'json',
     data: JSON.stringify({date:new_data.map(function(x){return x['date']}),value:new_data.map(function(x){return x['value']})}),
@@ -234,7 +234,7 @@ $(".dropdown-menu li a").click(function(){
 console.log(new_data)
 $.ajax({
     type:"POST",
-    url:"../../../../opencpu_time_series/opencpu_example/get",
+    url:"opencpu_example/get",
     contentType:'application/json',
     dataType:'json',
     data: JSON.stringify({date:new_data.map(function(x){return x['date']}),value:new_data.map(function(x){return x['value']})}),
@@ -269,7 +269,7 @@ $.ajax({
 else if (selText=='Breakpoint Detection'){
 $.ajax({
     type:"POST",
-    url:"../../../../opencpu_time_series/opencpu_example/bo",
+    url:"opencpu_example/bo",
     contentType:'application/json',
     dataType:'json',
     data: JSON.stringify({date:new_data.map(function(x){return x['date']}),value:new_data.map(function(x){return x['value']})}),
@@ -300,7 +300,7 @@ $.ajax({
   else if (selText=='Causal Impact'){
 $.ajax({
     type:"POST",
-    url:"../../../../opencpu_time_series/opencpu_example/ci",
+    url:"opencpu_example/ci",
     contentType:'application/json',
     dataType:'json',
     data: JSON.stringify({date:dat.map(function(x){return x['date']}),value:dat.map(function(x){return x['value']}),bp:70}),
@@ -381,7 +381,7 @@ $.ajax({
 
     $.ajax({
         type:"POST",
-        url:"../../../../opencpu_time_series/opencpu_example/anomaly",
+        url:"opencpu_example/anomaly",
         contentType:'application/json',
         dataType:'json',
         data: JSON.stringify({date:dat.map(function(x){return x['date']}),value:dat.map(function(x){return x['value']})}),
@@ -395,7 +395,7 @@ $.ajax({
     $('a.external').prop('href',"http://en.wikipedia.org/wiki/Change_detection");
 $.ajax({
     type:"POST",
-    url:"../../../../opencpu_time_series/opencpu_example/bcp",
+    url:"opencpu_example/bcp",
     contentType:'application/json',
     dataType:'json',
     data: JSON.stringify({date:new_data.map(function(x){return x['date']}),value:new_data.map(function(x){return x['value']})}),
