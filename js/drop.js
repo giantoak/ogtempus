@@ -1,8 +1,6 @@
 $(document).ready(function() {});
 
 var dat = []
-
-
 $.get('https://www.quandl.com/api/v1/datasets/BAVERAGE/USD.json?trim_start=2012-12-30&trim_end=2014-11-11&auth_token=wtEcBRATQ9CToGYSrjs4', function(data) {
     new_data = data['data'].map(function(x) {
         return {
@@ -742,10 +740,6 @@ $.get('https://www.quandl.com/api/v1/datasets/BAVERAGE/USD.json?trim_start=2012-
 
           }
         });
-
-
-
-
       } else if (selText == 'MMPP') {
 
       // TODO: Test this absolutely untested call.
@@ -920,12 +914,12 @@ function drawOutput(lines) {
 function handleFileSelect(evt) {
     evt.stopPropagation();
     evt.preventDefault();
-  var reader = new FileReader();
-  // Handle errors load
-  reader.onload = loadHandler;
-  reader.onerror = errorHandler;
-  // Read file into memory as UTF-8
-  reader.readAsText(fileToRead);
+    var reader = new FileReader();
+    // Handle errors load
+    reader.onload = loadHandler;
+    reader.onerror = errorHandler;
+    // Read file into memory as UTF-8
+    reader.readAsText(fileToRead);
 }
 
 function loadHandler(event) {
@@ -983,16 +977,15 @@ function drawOutput(lines) {
 function handleFileSelect(evt) {
   evt.stopPropagation();
   evt.preventDefault();
-
   var files = evt.dataTransfer.files; // FileList object.
-    getAsText(files[0]);
+  getAsText(files[0]);
 }
 
 function handleDragOver(evt) {
     evt.stopPropagation();
     evt.preventDefault();
     evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
-  getAsText(files[0]);
+    getAsText(files[0]);
 }
 
 function handleDragOver(evt) {
@@ -1004,6 +997,4 @@ function handleDragOver(evt) {
 // Setup the dnd listeners.
 var dropZone = document.getElementById('drop_zone');
 dropZone.addEventListener('dragover', handleDragOver, false);
-dropZone.addEventListener('drop', handleFileSelect, false);dropZone.addEventListener('drop', handleFileSelect, false);<<<<<<< Updated upstream
-dropZone.addEventListener('drop', handleFileSelect, false);
 dropZone.addEventListener('drop', handleFileSelect, false);
