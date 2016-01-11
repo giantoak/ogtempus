@@ -9,7 +9,7 @@ import collections
 opencpu_url = 'https://public.opencpu.org/ocpu'
 
 
-def getTS(date, value):
+def get_time_series(date, value):
     """
     :param date:
     :param value:
@@ -167,7 +167,7 @@ def anomaly(date, value):
 
 
 post_actions = {
-    'get': getTS,
+    'get': get_time_series,
     'bo': breakout,
     'bcp': bcp,
     'arima': arima,
