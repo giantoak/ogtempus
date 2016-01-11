@@ -166,13 +166,39 @@ def anomaly(date, value):
     return r.json()
 
 
+def mmpp(date, value):
+    """
+    Run GO's version of MMPP on the supplied time series data.
+    We use all default values here.
+
+    :param date:
+    :param value:
+    """
+
+    # Need to melt dates and values into a matrix
+    # By default, we assume day - week breakdowns.
+    # TODO: Test. As yet, totally untested, but maybe it works...
+
+    import pandas as pd
+    df = pd.DataFrame({'date': [pd.to_datetime(x) for x in date], 'value': value})
+    df['weekday'] = df['date'].apply(lambda x: x.weekday())
+    crosstab = pd.pivot_table(df, 'value', 'date', 'weekday', aggfunc=sum).T
+    crosstab_vals = ''.join(str(crosstab.values).replace('.', ',').replace('[', '').replace(']', '').split())
+    data_str = 'array(c({}, dim=c({},{})'.format(crosstab_vals, crosstab.shape[1], crosstab.shape[0])
+    url = '{}/github/giantoak/mmppr/R/sensorMMPP/json'.format(opencpu_url)
+    params = {'N': data_str}
+    r = requests.post(url, params)
+    return r.json()
+
+
 post_actions = {
     'get': get_time_series,
     'bo': breakout,
     'bcp': bcp,
     'arima': arima,
     'ci': ci,
-    'anomaly': anomaly
+    'anomaly': anomaly,
+    'mmpp': mmpp
 }
 
 
