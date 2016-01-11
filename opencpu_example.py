@@ -9,29 +9,29 @@ import collections
 def getTS(date, value):
     ts = value
     dates = date
-	data2 = 'ts(c('+str(ts)[1:-2]+'),frequency=12)' #need to post data as a time series object to stl
-	url = 'https://public.opencpu.org/ocpu/library/stats/R/stl'
-	params = {'x':data2,'s.window':4}
-	r = requests.post(url,params)
+    data2 = 'ts(c('+str(ts)[1:-2]+'),frequency=12)' #need to post data as a time series object to stl
+    url = 'https://public.opencpu.org/ocpu/library/stats/R/stl'
+    params = {'x':data2,'s.window':4}
+    r = requests.post(url,params)
 #stl returns an object of class stl with components 
 #time.series a multiple time series with columns seasonal, trend and remainder.
 #weights	the final robust weights (all one if fitting is not done robustly).
 #$call	the matched call ... etc
 #this object is not JSON-Serializable so we need to do another opencpu call to extract the time.series object
 
-	result=r.text.split('\n')[0] #gets the tmp storage address of the R object from the first request
-	url2='https://public.opencpu.org/ocpu/library/base/R/get/json'
-	params2={'x':'"time.series"','pos':result[10:21]} #using get to extract the time.series object
-	r2=requests.post(url2,params2)
-	seasonal=map(lambda x: x[0],r2.json())
-	trend=map(lambda x: x[1],r2.json())
-	remainder=map(lambda x: x[2],r2.json())
-	raw_ts=map(lambda x:{"date":x[0],"value":x[1]},zip(dates,ts))
-	seasonal_ts=map(lambda x:{"date":x[0],"value":x[1]},zip(dates,seasonal))
-	remainder_ts=map(lambda x:{"date":x[0],"value":x[1]},zip(dates,remainder))
-	trend_ts=map(lambda x:{"date":x[0],"value":x[1]},zip(dates,trend))
-	stl={'seasonal':seasonal_ts,'trend':trend_ts,'remainder':remainder_ts}
-	return json.dumps(stl)
+    result=r.text.split('\n')[0] #gets the tmp storage address of the R object from the first request
+    url2='https://public.opencpu.org/ocpu/library/base/R/get/json'
+    params2={'x':'"time.series"','pos':result[10:21]} #using get to extract the time.series object
+    r2=requests.post(url2,params2)
+    seasonal=map(lambda x: x[0],r2.json())
+    trend=map(lambda x: x[1],r2.json())
+    remainder=map(lambda x: x[2],r2.json())
+    raw_ts=map(lambda x:{"date":x[0],"value":x[1]},zip(dates,ts))
+    seasonal_ts=map(lambda x:{"date":x[0],"value":x[1]},zip(dates,seasonal))
+    remainder_ts=map(lambda x:{"date":x[0],"value":x[1]},zip(dates,remainder))
+    trend_ts=map(lambda x:{"date":x[0],"value":x[1]},zip(dates,trend))
+    stl={'seasonal':seasonal_ts,'trend':trend_ts,'remainder':remainder_ts}
+    return json.dumps(stl)
 
 
 def breakout(date, value):
