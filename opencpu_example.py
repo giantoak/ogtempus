@@ -70,12 +70,13 @@ def breakout(date, value):
 def bcp(date, value):
     url='{}/library/bcp/R/bcp/'.format(opencpu_url)
     data2='c('+str(value)[1:-2]+')'
-    params={'x': data2}
-    r=requests.post(url,params)
-    res=r.text.split('\n')[0]
+    params={'y': data2}
+    req=requests.post(url,params)
+    res=req.text.split('\n')[0]
     url2 = '{}/library/base/R/get/json'.format(opencpu_url)
     params2 = {'x': '"posterior.prob"','pos': res[10:21]}
     r2=requests.post(url2, params2)
+    
     return json.dumps(map(lambda x: {"date":x[0],"value":x[1]},zip(date,r2.json())))
 
 
@@ -85,7 +86,7 @@ def arima(date, value):
     data2 = 'ts(c('+str(ts)[1:-2]+'))'
     url = '{}/github/giantoak/goarima/R/arima_all/json'.format(opencpu_url)
     params = {'x': data2}
-    r = requests.post(url, params)
+    req = requests.post(url, params)
     # res = r.text.split('\n')[0]
     # url3 = 'http://public.opencpu.org/ocpu/library/stats/R/residuals/json'
     # x = {'object':res[10:21]}
@@ -93,7 +94,7 @@ def arima(date, value):
     # residuals = np.array(map(lambda x: x,r2.json()))
     # std_res = map(lambda x: x ,residuals/np.std(residuals))
     # return json.dumps(map(lambda x:{'date':x[0],'value':x[1]},zip(date,std_res)))
-    data = r.json()
+    data = req.json()
     data['dates'] = date
     return json.dumps(data)
 
@@ -150,5 +151,25 @@ def post(action, *args, **kwargs):
 
 
 
+"""with open('sample_data.json') as data_file:    
+    data = json.load(data_file)
 
-
+    test = data
+    test = json.loads(bcp(test['date'], test['value']))
+    
+    remove = []
+    length = len(test)
+    for i in range(0, length):
+        if test[i]['value'] == 0:
+            remove.append(i)
+            
+    for i in range(0, len(remove)):
+        test.pop(remove[i] - i)
+    
+    count = 0
+    for value in test:
+        if value['value'] == 0:
+            value.pop()
+            count += 1
+            
+    print count"""

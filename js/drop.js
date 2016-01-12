@@ -353,7 +353,16 @@ $.get('https://www.quandl.com/api/v1/datasets/BAVERAGE/USD.json?trim_start=2012-
                     }
                 });
 
-            } else {
+            } else if (selText == 'Changepoint Detection'){
+                var test_data = JSON.stringify({
+                        date: new_data.map(function(x) {
+                            return x['date']
+                        }),
+                        value: new_data.map(function(x) {
+                            return x['value']
+                        })
+                })
+                var x = 3;
                 $('a.external').prop('href', "http://en.wikipedia.org/wiki/Change_detection");
                 $.ajax({
                     type: "POST",
@@ -378,7 +387,7 @@ $.get('https://www.quandl.com/api/v1/datasets/BAVERAGE/USD.json?trim_start=2012-
                             data: data.map(function(x) {
                                 return {
                                     "date": new Date(x['date']),
-                                    value: x['value']
+                                    "value": x['value']
                                 }
                             }),
                             width: screen.width - 150,
@@ -386,12 +395,11 @@ $.get('https://www.quandl.com/api/v1/datasets/BAVERAGE/USD.json?trim_start=2012-
                             target: '#bcp',
                             chart_type: 'histogram',
                             x_accessor: 'date',
-                            linked: true,
+                            linked: false,
                             xax_count: 12,
                             area: false,
-                            binned: true,
                             y_accessor: 'value',
-                            min_y: 0
+                            binned: true
                         })
                     }
                 });
