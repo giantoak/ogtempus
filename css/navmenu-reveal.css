@@ -9,7 +9,10 @@ html, body {
   border-radius: 5px;
   padding: 25px;
   text-align: center;
-  font: 20pt bold 'Vollkorn';
+  font-size: 20pt;
+  font-family: "Lato";
+  font-style: bold;
+
   color: #bbb;
 }
 
