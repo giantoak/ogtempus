@@ -50,74 +50,29 @@ def _r_array_fmt(x, dim_one, dim_two):
     return 'array({}, dim={})'.format(_r_list_fmt(x), _r_list_fmt([dim_one, dim_two]))
 
 
-def get_time_series(date, value):
+def get_time_series(dates, values):
     """
 
-    :param date:
-    :param value:
+    :param dates:
+    :param values:
     :returns: `str` --
     """
-    ts = value
-    dates = date
     # need to post data as a time series object to stl
-    data2 = _r_ts_fmt(value, 12)
     url = _url_fmt(opencpu_url,
                    'library',
                    'stats',
                    'R',
                    'stl')
-    params = {'x': data2, 's.window': 4}
+    params = {'x': _r_ts_fmt(values, 12),
+              's.window': 4}
     r = requests.post(url, params)
 
     # stl returns an object of class stl with components
-    #  time.series a multiple time series with columns seasonal, trend and remainder.
-    #  weights	the final robust weights (all one if fitting is not done robustly).
+    #  time.series: a multiple time series with columns seasonal, trend and remainder.
+    #  weights: the final robust weights (all one if fitting is not done robustly).
     # #$call	the matched call ... etc
-    #  this object is not JSON-Serializable so we need to do another opencpu
-    #  call to extract the time.series object
-
-    # gets the tmp storage address of the R object from the first request
-    result = r.text.split('\n')[0]
-    url2 = 'https://public.opencpu.org/ocpu/library/base/R/get/json'
-    # using get to extract the time.series object
-    params2 = {'x': '"time.series"',
-               'pos': result[10:21]}
-    r2 = requests.post(url2, params2)
-    seasonal = map(lambda x: x[0],
-                   r2.json())
-    trend = map(lambda x: x[1],
-                r2.json())
-    remainder = map(lambda x: x[2],
-                    r2.json())
-    raw_ts = map(lambda x: {"date": x[0], "value": x[1]},
-                 zip(dates, ts))
-    seasonal_ts = map(
-        lambda x: {"date": x[0], "value": x[1]},
-        zip(dates, seasonal))
-    remainder_ts = map(
-        lambda x: {"date": x[0], "value": x[1]},
-        zip(dates, remainder))
-    trend_ts = map(lambda x: {"date": x[0], "value": x[1]},
-                   zip(dates, trend))
-    stl = {'seasonal': seasonal_ts,
-           'trend': trend_ts,
-           'remainder': remainder_ts}
-    # need to post data as a time series object to stl
-    data2 = _r_ts_fmt(ts, 12)
-    url = _url_fmt(opencpu_url,
-                   'library',
-                   'stats',
-                   'R',
-                   'stl')
-    params = {'x': data2,
-              's.window': 4}
-    r = requests.post(url, params)
-    # stl returns an object of class stl with three components:
-    # * time.series - a multiple time series with columns seasonal, trend and remainder.
-    # * weights     - the final robust weights (all one if fitting is not done robustly).
-    # * $call       - the matched call ... etc
-    # this object is not JSON-Serializable so we need to do another opencpu
-    # call to extract the time.series object
+    #  This object is not JSON-Serializable!
+    #  We need to do another opencpu call to extract the time.series object
 
     # gets the tmp storage address of the R object from the first request
     result = r.text.split('\n')[0]
@@ -130,27 +85,20 @@ def get_time_series(date, value):
     # using get to extract the time.series object
     params2 = {'x': '"time.series"',
                'pos': result[10:21]}
-    r2 = requests.post(url2,
-                       params2)
-    seasonal = map(lambda x: x[0],
-                   r2.json())
-    trend = map(lambda x: x[1],
-                r2.json())
-    remainder = map(lambda x: x[2],
-                    r2.json())
-    raw_ts = map(lambda x: {"date": x[0], "value": x[1]},
-                 zip(dates, ts))
-    seasonal_ts = map(
-        lambda x: {"date": x[0], "value": x[1]},
-        zip(dates, seasonal))
-    remainder_ts = map(
-        lambda x: {"date": x[0], "value": x[1]},
-        zip(dates, remainder))
-    trend_ts = map(lambda x: {"date": x[0], "value": x[1]},
-                   zip(dates, trend))
-    stl = {'seasonal': seasonal_ts,
-           'trend': trend_ts,
-           'remainder': remainder_ts}
+    r2 = requests.post(url2, params2)
+
+    seasonal = [x[0] for x in r2.json()]
+    trend = [x[1] for x in r2.json()]
+    remainder = [x[2] for x in r2.json()]
+
+    stl = {
+        'seasonal':
+            [{'date': d, 'value': v} for d, v in zip(dates, seasonal)],
+        'trend':
+            [{'date': d, 'value': v} for d, v in zip(dates, trend)],
+        'remainder':
+            [{'date': d, 'value': v} for d, v in zip(dates, remainder)]
+    }
     return json.dumps(stl)
 
 
