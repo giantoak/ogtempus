@@ -50,9 +50,10 @@ def _r_array_fmt(x, dim_one, dim_two):
 
 def get_time_series(date, value):
     """
+
     :param date:
     :param value:
-    :return str:
+    :returns: `str` --
     """
     ts = value
     dates = date
@@ -108,7 +109,7 @@ def breakout(date, value):
 
     :param date:
     :param value:
-    :return:
+    :returns: `` --
     """
     url = '{}/github/twitter/BreakoutDetection/R/breakout/json'.format(opencpu_url)
     data2 = 'c({})'.format(str(value)[1:-2])
@@ -122,7 +123,7 @@ def bcp(date, value):
 
     :param date:
     :param value:
-    :return str:
+    :returns: `str` --
     """
     url = '{}/library/bcp/R/bcp/json'.format(opencpu_url)
     data2 = 'c({})'.format(str(value)[1:-2])
@@ -142,7 +143,7 @@ def arima(date, value):
     Run GO's version of the ARIMA algorithm on the suppied time series data.
     :param date:
     :param value:
-    :return str:
+    :returns: `str` --
     """
     ts = value
     dates = date
@@ -168,7 +169,7 @@ def ci(date, value, bp):
     :param date:
     :param value:
     :param bp:
-    :return str:
+    :returns: `str` --
     """
     url = '{}/github/google/CausalImpact/R/CausalImpact/json'.format(opencpu_url)
     ts = value
@@ -193,7 +194,7 @@ def anomaly(date, value):
 
     :param date:
     :param value:
-    :return:
+    :returns: `str` --
     """
     url = '{}/github/twitter/AnomalyDetection/R/AnomalyDetectionTs/json'.format(opencpu_url)
     x = map(lambda x: collections.OrderedDict({"timestamp": str(x[0]), "count": x[1]}), zip(date, value))
@@ -212,6 +213,7 @@ def mmpp(date, value):
 
     :param date:
     :param value:
+    :returns: `` --
     """
 
     # Need to melt dates and values into a matrix
@@ -248,7 +250,7 @@ def post(action, *args, **kwargs):
     :param action:
     :param args:
     :param kwargs:
-    :return:
+    :returns: `` --
     """
     # ibm=requests.get("https://www.quandl.com/api/v1/datasets/GOOG/NYSE_IBM.json?trim_start="+date1+"&trim_end
     # ="+date2+"'")
