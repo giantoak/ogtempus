@@ -49,6 +49,7 @@ def _r_array_fmt(x, dim_one, dim_two):
     """
     return 'array({}, dim={})'.format(_r_list_fmt(x), _r_list_fmt([dim_one, dim_two]))
 
+
 def get_time_series(date, value):
     """
 
@@ -58,50 +59,98 @@ def get_time_series(date, value):
     """
     ts = value
     dates = date
-    data2 = 'ts(c('+str(ts)[1:-2]+'),frequency=12)' #need to post data as a time series object to stl
-    url = 'https://public.opencpu.org/ocpu/library/stats/R/stl'
-    params = {'x':data2,'s.window':4}
-    r = requests.post(url,params)
-#stl returns an object of class stl with components 
-#time.series a multiple time series with columns seasonal, trend and remainder.
-#weights	the final robust weights (all one if fitting is not done robustly).
-#$call	the matched call ... etc
-#this object is not JSON-Serializable so we need to do another opencpu call to extract the time.series object
-
-    result=r.text.split('\n')[0] #gets the tmp storage address of the R object from the first request
-    url2='https://public.opencpu.org/ocpu/library/base/R/get/json'
-    params2={'x':'"time.series"','pos':result[10:21]} #using get to extract the time.series object
-    r2=requests.post(url2,params2)
-    seasonal=map(lambda x: x[0],r2.json())
-    trend=map(lambda x: x[1],r2.json())
-    remainder=map(lambda x: x[2],r2.json())
-    raw_ts=map(lambda x:{"date":x[0],"value":x[1]},zip(dates,ts))
-    seasonal_ts=map(lambda x:{"date":x[0],"value":x[1]},zip(dates,seasonal))
-    remainder_ts=map(lambda x:{"date":x[0],"value":x[1]},zip(dates,remainder))
-    trend_ts=map(lambda x:{"date":x[0],"value":x[1]},zip(dates,trend))
-    stl={'seasonal':seasonal_ts,'trend':trend_ts,'remainder':remainder_ts}
-    data2 = 'ts(c('+str(ts)[1:-2]+'),frequency=12)'  # need to post data as a time series object to stl
-    url = '{}/library/stats/R/stl'.format(opencpu_url)
+    # need to post data as a time series object to stl
+    data2 = _r_ts_fmt(value, 12)
+    url = _url_fmt(opencpu_url,
+                   'library',
+                   'stats',
+                   'R',
+                   'stl')
     params = {'x': data2, 's.window': 4}
+    r = requests.post(url, params)
+
+    # stl returns an object of class stl with components
+    #  time.series a multiple time series with columns seasonal, trend and remainder.
+    #  weights	the final robust weights (all one if fitting is not done robustly).
+    # #$call	the matched call ... etc
+    #  this object is not JSON-Serializable so we need to do another opencpu
+    #  call to extract the time.series object
+
+    # gets the tmp storage address of the R object from the first request
+    result = r.text.split('\n')[0]
+    url2 = 'https://public.opencpu.org/ocpu/library/base/R/get/json'
+    # using get to extract the time.series object
+    params2 = {'x': '"time.series"',
+               'pos': result[10:21]}
+    r2 = requests.post(url2, params2)
+    seasonal = map(lambda x: x[0],
+                   r2.json())
+    trend = map(lambda x: x[1],
+                r2.json())
+    remainder = map(lambda x: x[2],
+                    r2.json())
+    raw_ts = map(lambda x: {"date": x[0], "value": x[1]},
+                 zip(dates, ts))
+    seasonal_ts = map(
+        lambda x: {"date": x[0], "value": x[1]},
+        zip(dates, seasonal))
+    remainder_ts = map(
+        lambda x: {"date": x[0], "value": x[1]},
+        zip(dates, remainder))
+    trend_ts = map(lambda x: {"date": x[0], "value": x[1]},
+                   zip(dates, trend))
+    stl = {'seasonal': seasonal_ts,
+           'trend': trend_ts,
+           'remainder': remainder_ts}
+    # need to post data as a time series object to stl
+    data2 = _r_ts_fmt(ts, 12)
+    url = _url_fmt(opencpu_url,
+                   'library',
+                   'stats',
+                   'R',
+                   'stl')
+    params = {'x': data2,
+              's.window': 4}
     r = requests.post(url, params)
     # stl returns an object of class stl with three components:
     # * time.series - a multiple time series with columns seasonal, trend and remainder.
     # * weights     - the final robust weights (all one if fitting is not done robustly).
     # * $call       - the matched call ... etc
-    # this object is not JSON-Serializable so we need to do another opencpu call to extract the time.series object
+    # this object is not JSON-Serializable so we need to do another opencpu
+    # call to extract the time.series object
 
-    result = r.text.split('\n')[0]  # gets the tmp storage address of the R object from the first request
-    url2 = '{}/library/base/R/get/json'.format(opencpu_url)
-    params2 = {'x': '"time.series"', 'pos': result[10:21]}  # using get to extract the time.series object
-    r2 = requests.post(url2, params2)
-    seasonal = map(lambda x: x[0], r2.json())
-    trend = map(lambda x: x[1], r2.json())
-    remainder = map(lambda x: x[2], r2.json())
-    raw_ts = map(lambda x: {"date": x[0], "value": x[1]}, zip(dates, ts))
-    seasonal_ts = map(lambda x: {"date": x[0], "value": x[1]}, zip(dates,  seasonal))
-    remainder_ts = map(lambda x: {"date": x[0], "value": x[1]}, zip(dates, remainder))
-    trend_ts = map(lambda x: {"date": x[0], "value": x[1]}, zip(dates, trend))
-    stl = {'seasonal': seasonal_ts, 'trend': trend_ts, 'remainder': remainder_ts}
+    # gets the tmp storage address of the R object from the first request
+    result = r.text.split('\n')[0]
+    url2 = _url_fmt(opencpu_url,
+                    'library',
+                    'base',
+                    'R',
+                    'get',
+                    'json')
+    # using get to extract the time.series object
+    params2 = {'x': '"time.series"',
+               'pos': result[10:21]}
+    r2 = requests.post(url2,
+                       params2)
+    seasonal = map(lambda x: x[0],
+                   r2.json())
+    trend = map(lambda x: x[1],
+                r2.json())
+    remainder = map(lambda x: x[2],
+                    r2.json())
+    raw_ts = map(lambda x: {"date": x[0], "value": x[1]},
+                 zip(dates, ts))
+    seasonal_ts = map(
+        lambda x: {"date": x[0], "value": x[1]},
+        zip(dates, seasonal))
+    remainder_ts = map(
+        lambda x: {"date": x[0], "value": x[1]},
+        zip(dates, remainder))
+    trend_ts = map(lambda x: {"date": x[0], "value": x[1]},
+                   zip(dates, trend))
+    stl = {'seasonal': seasonal_ts,
+           'trend': trend_ts,
+           'remainder': remainder_ts}
     return json.dumps(stl)
 
 
@@ -112,8 +161,14 @@ def breakout(date, value):
     :param value:
     :returns: `` --
     """
-    url = '{}/github/twitter/BreakoutDetection/R/breakout/json'.format(opencpu_url)
-    data2 = 'c({})'.format(str(value)[1:-2])
+    url = _url_fmt(opencpu_url,
+                   'github',
+                   'twitter',
+                   'BreakoutDetection',
+                   'R',
+                   'breakout',
+                   'json')
+    data2 = _r_list_fmt(value)
     params = {'Z': data2}
     r = requests.post(url, params)
     return r.json()
@@ -126,17 +181,29 @@ def bcp(date, value):
     :param value:
     :returns: `str` --
     """
-    url = '{}/library/bcp/R/bcp/json'.format(opencpu_url)
-    data2 = 'c({})'.format(str(value)[1:-2])
+    url = _url_fmt(opencpu_url,
+                   'library',
+                   'bcp',
+                   'R',
+                   'bcp',
+                   'json')
+    data2 = _r_list_fmt(value)
     params = {'x': data2}
     r = requests.post(url, params)
 
     res = r.text.split('\n')[0]
-    url2 = '{}/library/base/R/get/json'.format(opencpu_url)
-    params2 = {'x': '"posterior.prob"', 'pos': res[10:21]}
+    url2 = _url_fmt(opencpu_url,
+                    'library',
+                    'base',
+                    'R',
+                    'get',
+                    'json')
+    params2 = {'x': '"posterior.prob"',
+               'pos': res[10:21]}
     r2 = requests.post(url2, params2)
 
-    return json.dumps(map(lambda x: {"date": x[0], "value": x[1]}, zip(date, r2.json())))
+    return json.dumps(map(lambda x: {"date": x[0], "value": x[1]},
+                          zip(date, r2.json())))
 
 
 def arima(date, value):
@@ -146,10 +213,15 @@ def arima(date, value):
     :param value:
     :returns: `str` --
     """
-    ts = value
     dates = date
-    data2 = 'ts(c({}))'.format(str(ts)[1:-2])
-    url = '{}/github/giantoak/goarima/R/arima_all/json'.format(opencpu_url)
+    data2 = _r_ts_fmt(value)
+    url = _url_fmt(opencpu_url,
+                   'github',
+                   'giantoak',
+                   'goarima',
+                   'R',
+                   'arima_all',
+                   'json')
     params = {'x': data2}
     req = requests.post(url, params)
     # res = r.text.split('\n')[0]
@@ -158,7 +230,8 @@ def arima(date, value):
     # r2 = requests.post(url3,x)
     # residuals = np.array(map(lambda x: x,r2.json()))
     # std_res = map(lambda x: x ,residuals/np.std(residuals))
-    # return json.dumps(map(lambda x:{'date':x[0],'value':x[1]},zip(date,std_res)))
+    # return json.dumps(map(lambda
+    # x:{'date':x[0],'value':x[1]},zip(date,std_res)))
     data = req.json()
     data['dates'] = date
     return json.dumps(data)
@@ -172,12 +245,20 @@ def ci(date, value, bp):
     :param bp:
     :returns: `str` --
     """
-    url = '{}/github/google/CausalImpact/R/CausalImpact/json'.format(opencpu_url)
+    url = _url_fmt(opencpu_url,
+                   'github',
+                   'google',
+                   'CausalImpact',
+                   'R',
+                   'CausalImpact',
+                   'json')
     ts = value
     length = len(value)
     dates = date
-    data2 = 'ts(c({}))'.format(str(ts)[1:-2])
-    params = {'data': data2, 'pre.period': 'c(1,{})'.format(bp), 'post.period': 'c({},{})'.format(bp+1, length)}
+    data2 = _r_ts_fmt(value)
+    params = {'data': data2,
+              'pre.period': 'c(1,{})'.format(bp),
+              'post.period': 'c({},{})'.format(bp + 1, length)}
     r = requests.post(url, params)
     res = r.text.split('\n')[0]
 
@@ -197,9 +278,16 @@ def anomaly(date, value):
     :param value:
     :returns: `str` --
     """
-    url = '{}/github/twitter/AnomalyDetection/R/AnomalyDetectionTs/json'.format(opencpu_url)
-    x = map(lambda x: collections.OrderedDict({"timestamp": str(x[0]), "count": x[1]}), zip(date, value))
-    data = {"x": map(lambda x: collections.OrderedDict([("timestamp", str(x[0])), ("count", x[1])]), zip(date, value))}
+    url = _url_fmt(opencpu_url,
+                   'github',
+                   'twitter',
+                   'AnomalyDetection',
+                   'R',
+                   'AnomalyDetectionTs',
+                   'json')
+    data = {'x': map(lambda x: OrderedDict([('timestamp', str(x[0])),
+                                            ('count', x[1])]),
+                     zip(date, value))}
     headers = {'Content-Type': 'application/json'}
     r = requests.post(url, json.dumps(data), headers=headers)
     # data=r.json()
@@ -221,12 +309,23 @@ def mmpp(date, value):
     # By default, we assume day - week breakdowns.
     # TODO: Test. As yet, totally untested, but maybe it works...
 
-    df = pd.DataFrame({'date': [pd.to_datetime(x) for x in date], 'value': value})
-    df['weekday'] = df['date'].apply(lambda x: x.weekday())
+    df = pd.DataFrame({'date': [pd.to_datetime(x)
+                                for x in date],
+                       'value': value})
+    df['weekday'] = df.date.apply(lambda x: x.weekday())
     crosstab = pd.pivot_table(df, 'value', 'date', 'weekday', aggfunc=sum).T
-    crosstab_vals = ''.join(str(crosstab.values).replace('.', ',').replace('[', '').replace(']', '').split())
-    data_str = 'array(c({}, dim=c({},{})'.format(crosstab_vals, crosstab.shape[1], crosstab.shape[0])
-    url = '{}/github/giantoak/mmppr/R/sensorMMPP/json'.format(opencpu_url)
+    crosstab_vals = ''.join(str(crosstab.values).replace(
+        '.', ',').replace('[', '').replace(']', '').split())
+    data_str = _r_array_fmt(crosstab_vals,
+                            crosstab.shape[1],
+                            crosstab.shape[0])
+    url = _url_fmt(opencpu_url,
+                   'github',
+                   'giantoak',
+                   'mmppr',
+                   'R',
+                   'sensorMMPP',
+                   'json')
     params = {'N': data_str}
     r = requests.post(url, params)
     return r.json()
@@ -259,30 +358,30 @@ def post(action, *args, **kwargs):
     def unknown(**kwargs):
         return tangelo.HTTPStatusCode(400, "invalid service call")
 
-    # we now have a json object containing the seasonal, trend, and remainder components
+    # we now have a json object containing the seasonal, trend, and remainder
+    # components
     return post_actions.get(action, unknown)(**post_data)
 
 
-
-"""with open('sample_data.json') as data_file:    
+"""with open('sample_data.json') as data_file:
     data = json.load(data_file)
 
     test = data
     test = json.loads(bcp(test['date'], test['value']))
-    
+
     remove = []
     length = len(test)
     for i in range(0, length):
         if test[i]['value'] == 0:
             remove.append(i)
-            
+
     for i in range(0, len(remove)):
         test.pop(remove[i] - i)
-    
+
     count = 0
     for value in test:
         if value['value'] == 0:
             value.pop()
             count += 1
-            
+
     print count"""

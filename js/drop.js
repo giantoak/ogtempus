@@ -801,7 +801,7 @@ $.get('https://www.quandl.com/api/v1/datasets/BAVERAGE/USD.json?trim_start=2012-
             date: new_data.map(function(x) {
               return x['date']
             }),
-            value: new_data.map(function(x) {
+            value: new_data.map(function(x) {q
               return x['value']
             })
           }),
