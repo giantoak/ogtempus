@@ -1,10 +1,8 @@
-import tangelo
-import requests
-# import cherrypy
-# import numpy as np
-# import urllib
+from collections import OrderedDict
 import simplejson as json
-import collections
+import requests
+import tangelo
+
 
 opencpu_url = 'https://public.opencpu.org/ocpu'
 
