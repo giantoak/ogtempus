@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import simplejson as json
+import pandas as pd
 import requests
 import tangelo
 
@@ -220,7 +221,6 @@ def mmpp(date, value):
     # By default, we assume day - week breakdowns.
     # TODO: Test. As yet, totally untested, but maybe it works...
 
-    import pandas as pd
     df = pd.DataFrame({'date': [pd.to_datetime(x) for x in date], 'value': value})
     df['weekday'] = df['date'].apply(lambda x: x.weekday())
     crosstab = pd.pivot_table(df, 'value', 'date', 'weekday', aggfunc=sum).T
