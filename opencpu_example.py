@@ -259,12 +259,10 @@ def mmpp(date, value):
                                 for x in date],
                        'value': value})
     df['weekday'] = df.date.apply(lambda x: x.weekday())
-    crosstab = pd.pivot_table(df, 'value', 'date', 'weekday', aggfunc=sum).T
-    crosstab_vals = ''.join(str(crosstab.values).replace(
-        '.', ',').replace('[', '').replace(']', '').split())
-    data_str = _r_array_fmt(crosstab_vals,
-                            crosstab.shape[1],
-                            crosstab.shape[0])
+    crosstab = pd.pivot_table(df, 'value', 'date', 'weekday', aggfunc=sum).T.fillna(0).astype(int)
+    crosstab_val_str = ','.join([str(x) for x in np.ravel(crosstab.values)])
+
+    data_str = _r_array_fmt(crosstab_val_str, crosstab.shape[1], crosstab.shape[0])
     url = _url_fmt(opencpu_url,
                    'github',
                    'giantoak',
