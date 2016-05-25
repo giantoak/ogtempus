@@ -102,11 +102,11 @@ def get_time_series(dates, values):
     return json.dumps(stl)
 
 
-def breakout(date, value):
+def breakout(dates, values):
     """
 
-    :param date:
-    :param value:
+    :param dates:
+    :param values:
     :returns: `` --
     """
     url = _url_fmt(opencpu_url,
@@ -116,7 +116,7 @@ def breakout(date, value):
                    'R',
                    'breakout',
                    'json')
-    data2 = _r_list_fmt(value)
+    data2 = _r_list_fmt(values)
     params = {'Z': data2}
     r = requests.post(url, params)
     return r.json()
@@ -154,15 +154,13 @@ def bcp(date, value):
                           zip(date, r2.json())))
 
 
-def arima(date, value):
+def arima(dates, values):
     """
     Run GO's version of the ARIMA algorithm on the supplied time series data.
     :param date:
     :param value:
     :returns: `str` --
     """
-    dates = date
-    data2 = _r_ts_fmt(value)
     url = _url_fmt(opencpu_url,
                    'github',
                    'giantoak',
@@ -170,7 +168,7 @@ def arima(date, value):
                    'R',
                    'arima_all',
                    'json')
-    params = {'x': data2}
+    params = {'x': _r_ts_fmt(values)}
     req = requests.post(url, params)
     # res = r.text.split('\n')[0]
     # url3 = 'http://public.opencpu.org/ocpu/library/stats/R/residuals/json'
@@ -181,7 +179,7 @@ def arima(date, value):
     # return json.dumps(map(lambda
     # x:{'date':x[0],'value':x[1]},zip(date,std_res)))
     data = req.json()
-    data['dates'] = date
+    data['dates'] = dates
     return json.dumps(data)
 
 
