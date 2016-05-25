@@ -19,7 +19,7 @@ def _r_list_fmt(x):
     """
 
     :param x: Some variable
-    :returns: `str` -- variable formatted as r list
+    :returns: `str` -- variable formatted as an R list
     """
     if isinstance(x, (list, set)):
         return 'c({})'.format(str(x)[1:-2])
@@ -31,7 +31,7 @@ def _r_ts_fmt(x, frequency=None):
 
     :param x:
     :param frequency:
-    :returns: `str` -- variable formatted as r time series
+    :returns: `str` -- variable formatted as an R time series
     """
     if frequency is None:
         return 'ts({})'.format(_r_list_fmt(x))
@@ -45,7 +45,7 @@ def _r_array_fmt(x, dim_one, dim_two):
     :param x:
     :param int dim_one:
     :param int dim_two:
-    :returns: `str` -- variables formatted as r array
+    :returns: `str` -- variables formatted as an R array
     """
     return 'array({}, dim={})'.format(_r_list_fmt(x), _r_list_fmt([dim_one, dim_two]))
 
@@ -156,7 +156,7 @@ def bcp(date, value):
 
 def arima(date, value):
     """
-    Run GO's version of the ARIMA algorithm on the suppied time series data.
+    Run GO's version of the ARIMA algorithm on the supplied time series data.
     :param date:
     :param value:
     :returns: `str` --
