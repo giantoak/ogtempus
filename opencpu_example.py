@@ -1,5 +1,6 @@
 from collections import OrderedDict
 import simplejson as json
+import numpy as np
 import pandas as pd
 import requests
 import tangelo
