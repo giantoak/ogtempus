@@ -22,7 +22,7 @@ def _r_list_fmt(x):
     :returns: `str` -- variable formatted as an R list
     """
     if isinstance(x, (list, set)):
-        return 'c({})'.format(str(x)[1:-2])
+        return 'c({})'.format(str(x)[1:-1])
     return 'c({})'.format(x)
 
 
